@@ -23,8 +23,6 @@ const CONFIG_PATH = path.join(CONFIG_DIR, 'config.json')
 const WHISPER_PORT = 50061
 const KOKORO_PORT = 50062                                            // the agents' voices (tools/kokoro-server.py)
 const KOKORO_PY = path.join(os.homedir(), '.chums/kokoro/.venv/bin/python')
-const WHISPER_MODEL = process.env.CHUMS_WHISPER_MODEL || path.join(os.homedir(),
-  'Documents/huggingface/models/argmaxinc/whisperkit-coreml/openai_whisper-base')
 const ROOT = path.join(import.meta.dirname, '..')                  // this checkout
 // the claude CLI for the soul editor: $CHUMS_CLAUDE_BIN, else the native installer's (~/.local/bin), else an npm prefix
 // install in ~/.npm-global, else PATH's (a LaunchAgent's PATH has neither of those folders)
@@ -61,6 +59,8 @@ function loadConfig() {
   return cfg
 }
 const cfg = loadConfig()
+const WHISPER_MODEL = process.env.CHUMS_WHISPER_MODEL || cfg.whisperModel || path.join(os.homedir(),
+  'Documents/huggingface/models/argmaxinc/whisperkit-coreml/openai_whisper-base')
 
 const log = (...a) => console.log(new Date().toISOString().slice(11, 19), ...a)
 

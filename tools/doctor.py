@@ -22,8 +22,7 @@ CONFIG = os.path.join(CHUMS, 'config.json')
 AGENTS = os.path.join(CHUMS, 'agents.json')
 TS_SOCK = os.path.join(CHUMS, 'tailscale', 'tailscaled.sock')
 DEV = os.environ.get('DEVELOPER_DIR') or '/Applications/Xcode.app/Contents/Developer'
-MODEL = os.environ.get('CHUMS_WHISPER_MODEL') or os.path.join(
-    HOME, 'Documents/huggingface/models/argmaxinc/whisperkit-coreml/openai_whisper-base')
+WHISPER_BASE = os.path.join(HOME, 'Documents/huggingface/models/argmaxinc/whisperkit-coreml/openai_whisper-base')
 WHISPER_PORT = 50061
 KOKORO_PORT = 50062
 HUBCONFIG = os.path.join(ROOT, 'app/ChumsWatch/HubConfig.swift')
@@ -132,6 +131,7 @@ if os.path.isfile(AGENTS):
     try: agents = read_json(AGENTS)
     except ValueError as e: agents_problem = str(e)
 label_prefix = label_prefix or (cfg or {}).get('launchdPrefix') or 'dev.chums'
+MODEL = os.environ.get('CHUMS_WHISPER_MODEL') or (cfg or {}).get('whisperModel') or WHISPER_BASE
 runtimes = [(a.get('runtime') or 'claude') for a in agents if isinstance(a, dict)] if isinstance(agents, list) else []
 need_claude = not runtimes or 'claude' in runtimes
 need_codex = 'codex' in runtimes
@@ -164,10 +164,11 @@ wk = find('whisperkit-cli')[0]
 if wk: ok(f'whisperkit-cli ({wk})')
 else: fail('whisperkit-cli is not installed (speech to text on the Mac)', 'brew install whisperkit-cli')
 if os.path.isfile(os.path.join(MODEL, 'config.json')) or os.path.isdir(os.path.join(MODEL, 'AudioEncoder.mlmodelc')):
-    ok('Whisper base model downloaded')
+    ok(f'Whisper model downloaded ({os.path.basename(MODEL.rstrip("/"))})')
 else:
     fail(f'Whisper model not found at {MODEL}',
-         ['bin/chums-setup downloads it (about 150 MB)', 'or set CHUMS_WHISPER_MODEL to the folder of a model you have'])
+         ['bin/chums-setup downloads it',
+          'or set "whisperModel" in ~/.chums/config.json (or CHUMS_WHISPER_MODEL) to the folder of a model you have'])
 
 ff = find('ffmpeg')[0]
 if ff: ok(f'ffmpeg ({ff})')

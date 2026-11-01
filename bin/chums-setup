@@ -11,7 +11,8 @@ source "$ROOT/tools/common.zsh"
 chums_help "$@"
 LAUNCHD=0; [[ "$1" == --launchd ]] && LAUNCHD=1
 [[ -z "$1" || "$1" == --launchd ]] || chums_die "unknown option $1 (bin/chums-setup --help)"
-MODEL=${CHUMS_WHISPER_MODEL:-~/Documents/huggingface/models/argmaxinc/whisperkit-coreml/openai_whisper-base}
+MODEL=${CHUMS_WHISPER_MODEL:-$(chums_cfg whisperModel)}
+: ${MODEL:=~/Documents/huggingface/models/argmaxinc/whisperkit-coreml/openai_whisper-base}
 missing=0
 ok()   { print -- "  ok    $*" }
 warn() { print -- "  --    $*" }
@@ -49,11 +50,11 @@ if command -v whisperkit-cli >/dev/null; then
   ok "whisperkit-cli"
   if [[ -f "$MODEL/config.json" || -d "$MODEL/AudioEncoder.mlmodelc" ]]; then ok "Whisper model ($MODEL)"
   else
-    print "  ...   downloading the Whisper base model (about 150 MB) to ${MODEL:h}"
+    print "  ...   downloading the Whisper model ${MODEL:t} to ${MODEL:h}"
     T=$(mktemp -d); say -o "$T/hello.wav" --data-format=LEI16@16000 "hello" 2>/dev/null
-    whisperkit-cli transcribe --model base --download-model-path "${MODEL:h:h:h:h}" --audio-path "$T/hello.wav" >/dev/null 2>&1
+    whisperkit-cli transcribe --model "${${MODEL:t}#openai_whisper-}" --download-model-path "${MODEL:h:h:h:h}" --audio-path "$T/hello.wav" >/dev/null 2>&1
     rm -rf "$T"
-    [[ -d "$MODEL" ]] && ok "Whisper model ($MODEL)" || bad "Whisper model: not at $MODEL. Download openai_whisper-base from huggingface.co/argmaxinc/whisperkit-coreml there, or set CHUMS_WHISPER_MODEL"
+    [[ -d "$MODEL" ]] && ok "Whisper model ($MODEL)" || bad "Whisper model: not at $MODEL. Download ${MODEL:t} from huggingface.co/argmaxinc/whisperkit-coreml there, or set \"whisperModel\" in $CHUMS_CONFIG (or CHUMS_WHISPER_MODEL)"
   fi
 else bad "whisperkit-cli (speech to text on the Mac): brew install whisperkit-cli"; fi
 command -v ffmpeg >/dev/null && ok "ffmpeg" || bad "ffmpeg (converts each clip for Whisper): brew install ffmpeg"

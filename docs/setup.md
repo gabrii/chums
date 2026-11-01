@@ -622,7 +622,7 @@ Each one is an environment variable, or a key in `~/.chums/config.json`, or the 
 | `CHUMS_BUNDLE` | `bundleId` | `dev.chums.<team>` (device), `dev.chums` (Simulator) | The app's bundle ID |
 | `CHUMS_LABEL_PREFIX` | `launchdPrefix` | `dev.chums` | LaunchAgent labels (`<prefix>.hub`, `<prefix>.tailscaled`, `<prefix>.agent.<id>`) |
 | `CHUMS_NODE` | `node` | `node` on your PATH | The node binary LaunchAgents run |
-| `CHUMS_WHISPER_MODEL` | | `~/Documents/huggingface/models/argmaxinc/whisperkit-coreml/openai_whisper-base` | Whisper model folder |
+| `CHUMS_WHISPER_MODEL` | `whisperModel` | `~/Documents/huggingface/models/argmaxinc/whisperkit-coreml/openai_whisper-base` | Whisper model folder, an absolute path. Its name is the model's: `openai_whisper-large-v3-v20240930_turbo` (about 1.5 GB) hears better than `base`; `bin/chums-setup` downloads the one named |
 | `CHUMS_CLAUDE_BIN` | | `claude` in `~/.local/bin`, `~/.npm-global/bin` or PATH | The claude CLI for the soul editor |
 | `CHUMS_NO_RC` | `remoteControl` | on | `"remoteControl": false` starts every Claude Code session without Remote Control (for an API key); `CHUMS_NO_RC=1` does it for the sessions started from that shell |
 | | `tts` | `{ "engine": "kokoro" }` when installed | The voice replies are read in: `kokoro` (each agent's own), `say` (a macOS voice), `openai`, or `watch` |
@@ -650,7 +650,7 @@ Restart the hub after changing `config.json`. Run `bin/chums-install` again afte
 | `~/.chums/tailscale/` | Chums' `tailscaled` state and log |
 | `~/.chums/kokoro/` | The agents' voices: Kokoro's Python (`bin/chums-setup`) |
 | `~/.cache/huggingface/hub/models--mlx-community--Kokoro-82M-bf16/` | Kokoro's model and voices (`bin/chums-setup`) |
-| `~/Documents/huggingface/models/argmaxinc/whisperkit-coreml/openai_whisper-base/` | The Whisper model (`bin/chums-setup`; `CHUMS_WHISPER_MODEL` moves it) |
+| `~/Documents/huggingface/models/argmaxinc/whisperkit-coreml/openai_whisper-base/` | The Whisper model (`bin/chums-setup`; `whisperModel` or `CHUMS_WHISPER_MODEL` picks another) |
 | `~/Library/LaunchAgents/dev.chums.*.plist` | The hub's and `tailscaled`'s (`bin/chums-setup --launchd`), and one per Claude Code agent (`bin/chums-agents install`) |
 | `~/Applications/Chums.app` | The app the hub and the agents run through, so their permissions are Chums's ([permissions](#permissions-on-the-mac)) |
 | `app/ChumsWatch/HubConfig.swift`, `channel/mcp.json`, `channel/hooks.json` | Generated in the checkout; git-ignored |
