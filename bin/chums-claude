@@ -14,6 +14,17 @@ command -v node >/dev/null 2>&1 || die "node is not installed (the channel and t
 [[ -d "$CHUMS_ROOT/node_modules/@modelcontextprotocol/sdk" ]] || die "the npm packages aren't installed. Run bin/chums-setup (or npm ci in $CHUMS_ROOT)."
 command -v claude >/dev/null 2>&1 ||
   die "claude is not on PATH. Install Claude Code (curl -fsSL https://claude.ai/install.sh | bash), or add its folder (often ~/.local/bin) to PATH."
+L=$(node -e 'const l = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")).claudeLauncher
+if (l === undefined) process.exit(0)
+if (!Array.isArray(l) || !l.length || !l.every(w => typeof w === "string" && w)) process.exit(1)
+process.stdout.write(l.join("\0"))' ~/.chums/config.json) ||
+  die "\"claudeLauncher\" in ~/.chums/config.json must be a list of words, e.g. [\"/opt/sandbox/bin/run\", \"--\"]."
+launcher=(${(0)L})
+launcher=("${(@)launcher//\{root\}/$CHUMS_ROOT}")
+launcher=("${(@)launcher/#\~\//$HOME/}")
+(( ${#launcher} )) || launcher=(claude)
+command -v "$launcher[1]" >/dev/null 2>&1 ||
+  die "$launcher[1] (\"claudeLauncher\" in ~/.chums/config.json) is not found. Use its full path: a LaunchAgent doesn't get your shell's PATH."
 # a path inside a JSON string
 jstr() { local s=${1//\\/\\\\}; print -rn -- ${s//\"/\\\"} }
 MCP_JSON="$CHUMS_ROOT/channel/mcp.json"
@@ -63,6 +74,6 @@ node -e 'process.exit(JSON.parse(require("fs").readFileSync(process.argv[1], "ut
   ~/.chums/config.json 2>/dev/null && rc=()
 
 # Speaking to the watch is always allowed; a reply that waits on an approval would never be heard.
-exec command claude "${configs[@]}" "${rc[@]}" --settings "$HOOKS_JSON" \
+exec "${launcher[@]}" "${configs[@]}" "${rc[@]}" --settings "$HOOKS_JSON" \
   --allowedTools mcp__chums__chums_reply \
   --dangerously-load-development-channels server:chums "$@"

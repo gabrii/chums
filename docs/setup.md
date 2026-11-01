@@ -625,6 +625,7 @@ Each one is an environment variable, or a key in `~/.chums/config.json`, or the 
 | `CHUMS_NODE` | `node` | `node` on your PATH | The node binary LaunchAgents run |
 | `CHUMS_WHISPER_MODEL` | `whisperModel` | `~/Documents/huggingface/models/argmaxinc/whisperkit-coreml/openai_whisper-base` | Whisper model folder, an absolute path. Its name is the model's: `openai_whisper-large-v3-v20240930_turbo` (about 1.5 GB) hears better than `base`; `bin/chums-setup` downloads the one named |
 | `CHUMS_CLAUDE_BIN` | | `claude` in `~/.local/bin`, `~/.npm-global/bin` or PATH | The claude CLI for the soul editor |
+| | `claudeLauncher` | `claude` | What `bin/chums-claude` runs each Claude Code session with: a command that is given claude's arguments after its own, e.g. a sandbox, `["/opt/sandbox/bin/run", "--allow", "{root}", "--"]`. `{root}` is this checkout (the channel and the hooks run from it); a leading `~/` is your home folder. Give the command's full path: LaunchAgents don't get your shell's PATH |
 | `CHUMS_NO_RC` | `remoteControl` | on | `"remoteControl": false` starts every Claude Code session without Remote Control (for an API key); `CHUMS_NO_RC=1` does it for the sessions started from that shell |
 | | `tts` | `{ "engine": "kokoro" }` when installed | The voice replies are read in: `kokoro` (each agent's own), `say` (a macOS voice), `openai`, or `watch` |
 | `DEVELOPER_DIR` | | `/Applications/Xcode.app/Contents/Developer` | The Xcode the scripts use |
