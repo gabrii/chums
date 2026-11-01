@@ -48,12 +48,13 @@ struct HomeView: View {
 
     /// Every agent: in your order if you changed it, else the characters' order; any others after.
     private var agents: [AgentInfo] {
-        let all = hub.state?.agents ?? Agents.known
+        let all = hub.state?.agents ?? []
         let ids = order.split(separator: ",").map(String.init) + SoulView.looks
         var seen = Set<String>()
         let first = ids.compactMap { id in seen.insert(id).inserted ? all.first { $0.id == id } : nil }
         return first + all.filter { !seen.contains($0.id) }
     }
+    private var single: Bool { agents.count <= 1 }
     private var me: AgentInfo { model.controller.info(agent) }
     private var approval: Approval? { hub.state?.approvals.first { $0.session == agent } ?? demoApproval }
     @State private var demoApproval: Approval?        // debug pictures only (-approval YES)
@@ -190,8 +191,7 @@ struct HomeView: View {
                     .shadow(color: .black.opacity(0.5 * p), radius: 24, x: 8)
                     .gesture(sideGesture(sideW))
             }
-            // a swipe in from the left edge opens the agents (the system's edge pan: taps and scrolls there pass through)
-            .gesture(EdgePan(enabled: !sidecar && place != .front) { edgeDrag = max(0, $0) } ended: { _, end in
+            .gesture(EdgePan(enabled: !sidecar && place != .front && !single) { edgeDrag = max(0, $0) } ended: { _, end in
                 withAnimation(side) { edgeDrag = 0; sidecar = end > sideW * 0.5 }
             })
         }
@@ -398,7 +398,7 @@ struct HomeView: View {
     private func topBar(_ w: CGFloat) -> some View {
         ZStack {
             HStack {
-                AgentsButton(others: others) { withAnimation(side) { sidecar = true } }
+                if !single { AgentsButton(others: others) { withAnimation(side) { sidecar = true } } }
                 Spacer()
                 DotsButton(label: "Settings") { appSettings = true }
             }

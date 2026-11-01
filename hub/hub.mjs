@@ -101,7 +101,7 @@ const VOICES = {
 const DEFAULT_VOICE = 'af_heart'
 const defaultAgent = c => ({ id: c, name: LOOK_NAMES[c], character: c, runtime: 'claude', voice: VOICES[c] ?? DEFAULT_VOICE,
   cwd: `${HOME}/.chums/agents/${c}`, addDirs: [HOME], guide: GUIDE, sessionId: crypto.randomUUID() })
-const saveAgents = () => fs.writeFileSync(AGENTS_PATH, JSON.stringify(agents, null, 2))
+const saveAgents = () => fs.writeFileSync(AGENTS_PATH, JSON.stringify(allAgents, null, 2))
 function loadAgents() {
   const list = readSettings(AGENTS_PATH, [], v => Array.isArray(v) && v.every(a => a && typeof a === 'object' && typeof a.id === 'string'),
     'a valid JSON list of agents, each with an "id" (tools/agents.example.json)')
@@ -123,7 +123,10 @@ function loadAgents() {
   }
   return list
 }
-const agents = loadAgents()
+const allAgents = loadAgents()
+const inUse = Array.isArray(cfg.agents) ? allAgents.filter(a => cfg.agents.includes(a.id)) : allAgents
+if (!inUse.length) log(`config.json "agents" names none of the agents in ${AGENTS_PATH}: every agent is in use`)
+const agents = inUse.length ? inUse : allAgents
 const agentNamed = id => agents.find(a => a.id === id)
 const sessionOf = id => [...sessions.values()].find(s => s.name === id)
 

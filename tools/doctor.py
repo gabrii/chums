@@ -316,6 +316,12 @@ else:
     if problems: fail(f'~/.chums/agents.json: ' + '; '.join(problems), 'edit ~/.chums/agents.json (docs/other-agents.md lists the fields), then restart the hub')
     else: ok(f'~/.chums/agents.json: {len(agents)} agent{"s" * (len(agents) != 1)}: {summary}')
     for n in notes: warn(n)
+    in_use = (cfg or {}).get('agents')
+    if isinstance(in_use, list):
+        named = [i for i in in_use if any(isinstance(a, dict) and a.get('id') == i for a in agents)]
+        if named: note(f'in use (config.json "agents"): {", ".join(named)}; the others are kept in agents.json, unused')
+        else: warn('config.json "agents" names none of the agents in agents.json: every agent is in use',
+                   'set it to the ids of the agents you use, e.g. ["peeps"]')
 
 # ---------- 4. the hub ----------
 section('4. The hub')

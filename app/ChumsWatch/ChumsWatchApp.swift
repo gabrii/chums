@@ -203,7 +203,7 @@ struct ChumsScreen: View {
         .onChange(of: stayOn, initial: true) { _, v in StayOn.shared.enabled = v }
         .onChange(of: keepOn.problem, initial: true) { _, v in model.controller.notice = v }
         .sheet(isPresented: $showSettings) {
-            AgentsView(agents: hub.state?.agents ?? Agents.known, active: $agent,
+            AgentsView(agents: hub.state?.agents ?? [], active: $agent,
                        settings: AnyView(SettingsView(character: $character, mode: $mode, demo: $demo, voice: $voice, stayOn: $stayOn, keepOn: keepOn, report: { hub.event($0) })),
                        soul: { a in AnyView(SoulView(agent: a, model: model, hub: hub)) })
         }

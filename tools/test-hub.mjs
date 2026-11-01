@@ -229,6 +229,16 @@ const nd = written.find(a => a.id === 'noodle'), rd = written.find(a => a.id ===
 ok(/^[0-9a-f-]{36}$/.test(nd?.sessionId ?? '') && nd.cwd === path.join(byHand.home, '.chums/agents/noodle') && !rd?.sessionId && rd?.cwd === '/tmp/ray',
    'an agent written by hand gets a folder, and a Claude Code one a session ID (a Codex one gets its thread from Codex)')
 byHand.stop()
+const single = await startPrivateHub({ config: { agents: ['peeps'] } })
+const sCall = (p, body) => fetch(`http://127.0.0.1:${single.cfg.port}${p}`, { method: body ? 'POST' : 'GET', headers: { authorization: `Bearer ${single.cfg.token}`, 'content-type': 'application/json' }, body: body && JSON.stringify(body) })
+const inUseIds = (await (await sCall('/v1/state?since=0')).json()).agents.map(x => x.id)
+ok(inUseIds.join() === 'peeps', `with "agents": ["peeps"] the apps are told of Peeps alone (${inUseIds})`)
+const peepsVoice = (await sCall('/v1/agents/peeps/voice', { voice: 'af_bella' })).status
+const noodleVoice = (await sCall('/v1/agents/noodle/voice', { voice: 'af_bella' })).status
+const kept = JSON.parse(fs.readFileSync(path.join(single.home, '.chums/agents.json'), 'utf8'))
+ok(peepsVoice === 200 && noodleVoice === 404 && kept.length === 8 && kept.find(x => x.id === 'peeps')?.voice === 'af_bella',
+   'an agent not in use can\'t be changed, and saving the one in use keeps the other 7 in agents.json')
+single.stop()
 // a soul change said on a Mac without Claude Code (the editor is claude -p) is an error on the watch, not a stopped hub
 const noClaude = await startPrivateHub({ env: { CHUMS_CLAUDE_BIN: '/nonexistent/claude' } })
 const said = await fetch(`http://127.0.0.1:${noClaude.cfg.publicPort}/v1/say`, { method: 'POST', headers: { authorization: `Bearer ${noClaude.cfg.watchToken}`, 'content-type': 'application/json' }, body: JSON.stringify({ soul: MAC, text: 'talk more casually' }) }).then(r => r.json())

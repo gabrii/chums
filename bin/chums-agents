@@ -16,7 +16,9 @@ chums_help "$@"
 [[ -x "$CHUMS_NODE" ]] || chums_die "node not found. Install Node.js 20.11 or later (brew install node), or set CHUMS_NODE."
 [[ -f ~/.chums/agents.json ]] || chums_die "no ~/.chums/agents.json yet. Start the hub once (bin/chums-hub); it writes the defaults."
 # ids [claude|hub]: the agents run as Claude Code sessions, or by the hub
-ids() { "$CHUMS_NODE" -e 'const w=process.argv[1];console.log(JSON.parse(require("fs").readFileSync(process.env.HOME+"/.chums/agents.json","utf8")).filter(a=>((a.runtime??"claude")==="claude")===(w!=="hub")).map(a=>a.id).join(" "))' "$1" }
+ids() { "$CHUMS_NODE" -e 'const fs=require("fs"),h=process.env.HOME,w=process.argv[1];let u;try{u=JSON.parse(fs.readFileSync(h+"/.chums/config.json","utf8")).agents}catch{}
+const all=JSON.parse(fs.readFileSync(h+"/.chums/agents.json","utf8")),used=Array.isArray(u)?all.filter(a=>u.includes(a.id)):[];
+console.log((used.length?used:all).filter(a=>((a.runtime??"claude")==="claude")===(w!=="hub")).map(a=>a.id).join(" "))' "$1" }
 runtime() { "$CHUMS_NODE" -e 'const a=JSON.parse(require("fs").readFileSync(process.env.HOME+"/.chums/agents.json","utf8")).find(a=>a.id===process.argv[1]);console.log(a?(a.runtime??"claude"):"")' "$1" }
 label() { echo "$CHUMS_LABEL_PREFIX.agent.$1" }
 plist() {
@@ -58,7 +60,7 @@ case "$1" in
     for f in $LA/$CHUMS_LABEL_PREFIX.agent.*.plist(N); do
       a=${${f:t}%.plist}; a=${a#$CHUMS_LABEL_PREFIX.agent.}
       [[ $keep == *" $a "* ]] && continue
-      launchctl bootout $D/$(label $a) 2>/dev/null; rm -f "$f"; echo "removed $a's LaunchAgent (it isn't a Claude Code agent now)"
+      launchctl bootout $D/$(label $a) 2>/dev/null; rm -f "$f"; echo "removed $a's LaunchAgent (it isn't a Claude Code agent in use now)"
     done
     (( ${#failed} )) && chums_die "didn't start: $failed (their logs: ~/.chums/agents/<id>.launchd.log)"
     true ;;

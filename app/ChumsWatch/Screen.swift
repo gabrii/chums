@@ -199,7 +199,7 @@ final class ScreenModel {
         guard dt > 0 else { return }
         lastDate = date
         controller.update()
-        let all = hub.state?.agents ?? Agents.known, me = controller.agent
+        let all = hub.state?.agents ?? [], me = controller.agent
         let mine = UserDefaults.standard.string(forKey: "character") ?? controller.info(me).character
         let fake = UserDefaults.standard.string(forKey: "fakeNeeds")      // Simulator captures: -fakeNeeds noodle
         // the faces at the top: the one you talk to, then at most two others, those that need you first (asking, stuck,

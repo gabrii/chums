@@ -9,13 +9,13 @@
 import { spawn } from 'node:child_process'
 import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path'
 
-export async function startPrivateHub({ agents, env = {}, logFile, home: again } = {}) {
+export async function startPrivateHub({ agents, config = {}, env = {}, logFile, home: again } = {}) {
   const home = again ?? fs.mkdtempSync(path.join(os.tmpdir(), 'chums-test-'))
   let cfg
   if (again) cfg = JSON.parse(fs.readFileSync(path.join(home, '.chums/config.json'), 'utf8'))
   else {
     fs.mkdirSync(path.join(home, '.chums'))
-    cfg = { port: 17717 + Math.floor(Math.random() * 500) * 2, token: 'test-local-' + Date.now(), watchToken: 'test-watch-' + Date.now() }
+    cfg = { ...config, port: 17717 + Math.floor(Math.random() * 500) * 2, token: 'test-local-' + Date.now(), watchToken: 'test-watch-' + Date.now() }
     cfg.publicPort = cfg.port + 1
     fs.writeFileSync(path.join(home, '.chums/config.json'), JSON.stringify(cfg))
   }

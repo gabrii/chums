@@ -6,7 +6,7 @@ import SwiftUI
 enum Agents {
     /// Lines from before there were agents were the first agent's.
     static let fallback = "noodle"
-    /// Until the hub has said who's there: one per character.
+    /// One per character: an agent's name and face until the hub has described it.
     static let known = SoulView.looks.map { AgentInfo(id: $0, name: CharacterKind(id: $0)?.name ?? $0, character: $0, status: "offline", line: nil, needs: false) }
 
     /// What it's doing, in a few words, for its row and its pill.
@@ -46,30 +46,29 @@ struct AgentsView: View {
         let saved = orderRaw.split(separator: ",").map(String.init).filter { SoulView.looks.contains($0) }
         return saved + SoulView.looks.filter { !saved.contains($0) }
     }
+    private var shown: [(c: String, a: AgentInfo)] {
+        order.compactMap { c in agents.first { $0.id == c }.map { (c, $0) } }
+    }
     @State private var path: [String] = (UserDefaults.standard.string(forKey: "openSoul")).map { [$0] } ?? []   // -openSoul <id>
 
     var body: some View {
         NavigationStack(path: $path) {
             ScrollViewReader { proxy in
             List {
-                // every character is its own agent: a tap talks to it, swiping its row left (Edit) opens its soul
+                // a tap talks to an agent, swiping its row left (Edit) opens its soul
                 Section {
-                    ForEach(order, id: \.self) { c in
-                        if let a = agents.first(where: { $0.id == c }) {
-                            row(c, a).contentShape(Rectangle()).onTapGesture { active = a.id; Haptics.play(.click); dismiss() }
-                                .swipeActions(edge: .trailing) {
-                                    Button { path.append(a.id) } label: { Label("Edit", systemImage: "pencil") }.tint(Color(white: 0.3))
-                                }
-                                .id(a.id)
-                        } else {
-                            row(c, nil).id(c)                       // a hub from before every character had an agent
-                        }
+                    ForEach(shown, id: \.c) { c, a in
+                        row(c, a).contentShape(Rectangle()).onTapGesture { active = a.id; Haptics.play(.click); dismiss() }
+                            .swipeActions(edge: .trailing) {
+                                Button { path.append(a.id) } label: { Label("Edit", systemImage: "pencil") }.tint(Color(white: 0.3))
+                            }
+                            .id(a.id)
                     }
                     .onMove { from, to in
-                        var o = order; o.move(fromOffsets: from, toOffset: to)
-                        orderRaw = o.joined(separator: ","); Haptics.play(.click)
+                        var s = shown.map(\.c); s.move(fromOffsets: from, toOffset: to)
+                        orderRaw = (s + order.filter { !s.contains($0) }).joined(separator: ","); Haptics.play(.click)
                     }
-                } header: { Text("Characters") }
+                } header: { Text(shown.count == 1 ? "Agent" : "Characters") }
                 Section {
                     NavigationLink { settings } label: { Label("Settings", systemImage: "gearshape") }.id("settings")
                 }
@@ -97,19 +96,18 @@ struct AgentsView: View {
     }
 
     /// An agent's row: its face and name, its status (and its dot), what it runs on, a check if it's the one you talk to.
-    private func row(_ c: String, _ a: AgentInfo?) -> some View {
+    private func row(_ c: String, _ a: AgentInfo) -> some View {
         HStack(spacing: 10) {
             AgentFace(character: c, size: 34)
                 .overlay(alignment: .bottomTrailing) {
-                    if let a { Circle().fill(Agents.dot(a)).frame(width: 9, height: 9).overlay(Circle().strokeBorder(.black, lineWidth: 1.5)) }
+                    Circle().fill(Agents.dot(a)).frame(width: 9, height: 9).overlay(Circle().strokeBorder(.black, lineWidth: 1.5))
                 }
             VStack(alignment: .leading, spacing: 1) {
                 Text(CharacterKind(id: c)?.name ?? c).font(.system(size: 15, weight: .semibold)).foregroundStyle(Pal.white)
-                if let a { Text(Agents.status(a)).font(.system(size: 12)).foregroundStyle(a.needs ? Pal.amber : Pal.gray).lineLimit(2) }
-                else { Text("Not on your Mac yet: update the hub").font(.system(size: 12)).foregroundStyle(Pal.dim).lineLimit(2) }
+                Text(Agents.status(a)).font(.system(size: 12)).foregroundStyle(a.needs ? Pal.amber : Pal.gray).lineLimit(2)
             }
             Spacer(minLength: 0)
-            if let a, a.id == active { Image(systemName: "checkmark").font(.system(size: 13, weight: .bold)).foregroundStyle(Pal.clay) }
+            if a.id == active { Image(systemName: "checkmark").font(.system(size: 13, weight: .bold)).foregroundStyle(Pal.clay) }
         }
         .padding(.vertical, 2)
         .accessibilityElement(children: .combine)
