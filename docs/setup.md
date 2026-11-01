@@ -617,7 +617,7 @@ Each one is an environment variable, or a key in `~/.chums/config.json`, or the 
 | | `publicPort` | `7718` | The watch API's port (what Funnel forwards to) |
 | | `publicURL` | set by `bin/chums-tunnel` | The address built into the watch app |
 | | `ownerName` | `the user` | What the agents call you, e.g. `"Sam"` |
-| | `agents` | every agent | The ids of the agents in use, e.g. `["peeps"]` for one agent. The hub runs only these and the apps show only these; with one, the watch and the iPhone show no other agents and the iPhone has no agents' panel. The others stay in `agents.json`. Restart the hub and run `bin/chums-agents install` after changing it |
+| | `agents` | every agent | The ids of the agents in use, e.g. `["peeps"]` for one agent. The hub runs only these and the apps show only these; with one, the watch draws no faces at the top left (a tap there still opens its menu) and the iPhone has no agents' button or panel. The others stay in `agents.json`. Restart the hub and run `bin/chums-agents install` after changing it |
 | | `diagnostics` | `false` | `true`: the apps log their frame rate and memory to the hub every 30 s (for working on them; run `bin/chums-install` after) |
 | `CHUMS_TEAM` | `team` | picked by `tools/pick-team.py` | Apple developer team for signing |
 | `CHUMS_BUNDLE` | `bundleId` | `dev.chums.<team>` (device), `dev.chums` (Simulator) | The app's bundle ID |

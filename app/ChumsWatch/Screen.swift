@@ -210,7 +210,7 @@ final class ScreenModel {
                               case "offline": return 5; default: return 4 }
         }
         let others = all.filter { $0.id != me }.enumerated().sorted { (urgency($0.element), $0.offset) < (urgency($1.element), $1.offset) }.map(\.element)
-        rig.faces = [(mine, false)] + others.prefix(2).map { ($0.character, $0.needs || $0.id == fake) }
+        rig.faces = all.count <= 1 ? [] : [(mine, false)] + others.prefix(2).map { ($0.character, $0.needs || $0.id == fake) }
         rig.voiceInput = rig.state == .listening ? (Self.fakeVoice ? Self.voiceLike(rig.t) : recorder.level) : nil
         rig.tick(dt)
     }
