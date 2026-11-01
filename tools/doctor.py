@@ -578,6 +578,7 @@ else:
         def props(d):
             hp, dp, cp = d.get('hardwareProperties', {}), d.get('deviceProperties', {}), d.get('connectionProperties', {})
             return hp.get('platform'), dp.get('name', '?'), version(dp.get('osVersionNumber')), dp.get('developerModeStatus'), cp.get('pairingState')
+        devices = [d for d in devices if d.get('hardwareProperties', {}).get('reality') != 'simulated']
         watches = [d for d in devices if d.get('hardwareProperties', {}).get('platform') == 'watchOS']
         phones = [d for d in devices if d.get('hardwareProperties', {}).get('deviceType') == 'iPhone']
         for d in phones:
